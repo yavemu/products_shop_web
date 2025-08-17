@@ -1,21 +1,27 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f9fafb; /* fondo base más claro */
+  --foreground: #1f2937; /* texto gris oscuro */
+  --primary: #2563eb;    /* azul e-commerce (puede ser verde/naranja según prefieras) */
+  --secondary: #f97316;  /* naranja para resaltar */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #111827; /* gris oscuro elegante */
+    --foreground: #f3f4f6; /* texto claro */
+    --primary: #3b82f6;    /* azul brillante en modo oscuro */
+    --secondary: #fb923c;  /* naranja claro */
   }
 }
 
@@ -23,4 +29,30 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* botones */
+button {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  transition: background 0.2s ease;
+}
+
+button:hover {
+  background: #1d4ed8; /* azul más oscuro al hover */
+}
+
+/* textos de precio */
+.price {
+  color: #16a34a; /* verde éxito */
+  font-weight: bold;
+}
+
+/* stock */
+.stock {
+  color: #6b7280; /* gris medio */
+  font-size: 0.9rem;
 }

@@ -17,7 +17,10 @@ const CartSummary = () => {
 
   const totalProducts = cartItems?.length || 0;
 
-  const totalAmount = cartItems?.reduce((sum, item) => sum + (item?.total || 0), 0) || 0;
+  const totalAmount =
+    cartItems?.reduce((sum, item) => {
+      return sum + (item?.price ? item.price * item.quantity : 0);
+    }, 0) || 0;
 
   const formattedTotal = new Intl.NumberFormat("es-ES", {
     style: "currency",
@@ -58,7 +61,6 @@ const CartSummary = () => {
 
       <div className="cart-stats">
         <div className="stat-item">
-          <Package size={16} />
           <span className="stat-label">Productos:</span>
           <span className="stat-value">{totalProducts}</span>
         </div>
@@ -85,7 +87,7 @@ const CartSummary = () => {
               const formattedItemTotal = new Intl.NumberFormat("es-ES", {
                 style: "currency",
                 currency: "COP",
-              }).format(item.total);
+              }).format(item.price * item.quantity);
 
               return (
                 <div key={item.id} className="cart-item">

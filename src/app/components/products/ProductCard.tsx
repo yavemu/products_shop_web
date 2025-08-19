@@ -14,11 +14,14 @@ interface Props {
 export default function ProductCard({ product }: Props) {
   const dispatch = useDispatch();
 
-  const handleAdd = (quantity: number) => {
+  const handleAdd = ({ id, quantity, price, name }: { id: string | number; quantity: number; price: number; name: string }) => {
+    console.log("estoy en handleAdd", { id, quantity, price, name });
     dispatch(
       addToCart({
-        ...product,
+        id,
         quantity,
+        name,
+        price,
       }),
     );
   };

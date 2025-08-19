@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { CartItem, Product } from "@/lib/types/product";
+import { CartItem } from "@/lib/types/product";
 
 interface CartState {
   items: CartItem[];
@@ -13,19 +13,17 @@ const cartSlice = createSlice({
   name: "cart",
   initialState,
   reducers: {
-    addToCart: (state, action: PayloadAction<Product & { quantity: number }>) => {
-      // const existing = state.items.find((item) => item.id === action.payload.id);
-      // if (existing) {
-      //   existing.quantity = action.payload.quantity;
-      // } else {
-      //   state.items.push(action.payload);
-      // }
+    addToCart: (state, action) => {
+      const { id, quantity, name, price } = action.payload;
 
-      const stored = localStorage.getItem("carrito");
+      const existingItemIndex = state.items.findIndex((item) => item.id === id);
 
-      // Guardar en localStorage de forma segura
-      if (typeof window !== "undefined") {
-        localStorage.setItem("carrito", JSON.stringify(state.items));
+      if (existingItemIndex >= 0) {
+        // Si ya existe, actualizar cantidad
+        state.items[existingItemIndex].quantity = quantity;
+      } else {
+        // Si no existe, agregar nuevo item
+        state.items.push({ id, quantity, name, price });
       }
     },
     removeFromCart: (state, action: PayloadAction<number>) => {

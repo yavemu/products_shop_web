@@ -6,7 +6,7 @@ import QuantitySelectorUI from "../ui/quantity-selector";
 
 interface Props {
   product: Product;
-  onAdd: (productId: number, quantity: number) => void;
+  onAdd: ({ id, quantity, name, price }: { id: string | number; quantity: number; name: string; price: number }) => void;
 }
 
 const AvailableStock = ({ availableStock }: { availableStock: number }) => (
@@ -16,16 +16,16 @@ const AvailableStock = ({ availableStock }: { availableStock: number }) => (
 );
 
 const ProductActions = ({ product, onAdd }: Props) => {
-  const [quantity, setQuantity] = useState(0);
+  const [quantityToAdd, setQuantityToAdd] = useState(0);
   const { id: productId, stock } = product;
-  const availableStock = product.stock - quantity;
+  const availableStock = product.stock - quantityToAdd;
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const carrito = JSON.parse(localStorage.getItem("carrito") || "[]");
       const existingItem = carrito.find((item: any) => item.id === productId);
       if (existingItem) {
-        setQuantity(existingItem.quantity);
+        setQuantityToAdd(existingItem.quantity);
       }
     }
   }, [productId]);
@@ -33,13 +33,14 @@ const ProductActions = ({ product, onAdd }: Props) => {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const carrito = JSON.parse(localStorage.getItem("carrito") || "[]");
-      const existingItemIndex = carrito.findIndex((item: any) => item.id === productId);
-
-      if (quantity > 0) {
+      const existingItemIndex = carrito.findIndex((item: any) => item.id === product.id);
+      console.log("existingItemIndex", existingItemIndex);
+      if (quantityToAdd > 0) {
         const cartItem = {
           id: product.id,
           name: product.name,
-          quantity: quantity,
+          quantity: quantityToAdd,
+          price: product.price,
         };
 
         if (existingItemIndex >= 0) {
@@ -47,24 +48,19 @@ const ProductActions = ({ product, onAdd }: Props) => {
         } else {
           carrito.push(cartItem);
         }
-      } else {
-        if (existingItemIndex >= 0) {
-          carrito.splice(existingItemIndex, 1);
-        }
+
+        localStorage.setItem("carrito", JSON.stringify(carrito));
+        onAdd({ id: product.id, quantity: quantityToAdd, name: product.name, price: product.price });
       }
-
-      localStorage.setItem("carrito", JSON.stringify(carrito));
     }
-
-    onAdd(productId, quantity);
-  }, [quantity, productId, product.name, product.id, onAdd]);
+  }, [quantityToAdd, onAdd, product]);
 
   const decrease = () => {
-    if (quantity > 0) setQuantity((q) => q - 1);
+    if (quantityToAdd > 0) setQuantityToAdd((q) => q - 1);
   };
 
   const increase = () => {
-    if (quantity < stock) setQuantity((q) => q + 1);
+    if (quantityToAdd < stock) setQuantityToAdd((q) => q + 1);
   };
 
   if (!product) {
@@ -73,7 +69,7 @@ const ProductActions = ({ product, onAdd }: Props) => {
 
   return (
     <div className="flex flex-col gap-3 items-center ">
-      <QuantitySelectorUI quantity={quantity} onDecrease={decrease} onIncrease={increase} maxQuantity={stock} />
+      <QuantitySelectorUI quantity={quantityToAdd} onDecrease={decrease} onIncrease={increase} maxQuantity={stock} />
       <AvailableStock availableStock={availableStock} />
     </div>
   );

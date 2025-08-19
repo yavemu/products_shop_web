@@ -2,10 +2,11 @@
 
 import { useDispatch } from "react-redux";
 import { addToCart } from "@/lib/store/cartSlice";
-import { Product } from "@/lib/types/product";
+import { Product } from "@/types/product";
 import ProductImage from "./ProductImage";
 import ProductActions from "./ProductActions";
 import { Package } from "lucide-react";
+import { formatCurrency } from "@/lib/currency-utils";
 
 interface Props {
   product: Product;
@@ -25,11 +26,6 @@ export default function ProductCard({ product }: Props) {
       }),
     );
   };
-
-  const formattedPrice = new Intl.NumberFormat("es-ES", {
-    style: "currency",
-    currency: "COP",
-  }).format(product.price);
 
   if (!product) {
     return <div className="product-card-skeleton">Cargando...</div>;
@@ -51,7 +47,7 @@ export default function ProductCard({ product }: Props) {
         <h3 className="product-title">{product.name}</h3>
       </div>
       <p className="product-description">{product.description}</p>
-      <div className="product-price">{formattedPrice}</div>
+      <div className="product-price">{formatCurrency(product.price)}</div>
       <ProductActions product={product} onAdd={handleAdd} />
     </article>
   );

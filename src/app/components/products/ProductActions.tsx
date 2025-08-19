@@ -1,52 +1,63 @@
 "use client";
 
-import { Product } from "@/types/products/product";
+import { Product } from "@/lib/types/product";
 import { useState, useEffect } from "react";
+import QuantitySelectorUI from "../ui/quantity-selector";
 
 interface Props {
   product: Product;
   onAdd: (productId: number, quantity: number) => void;
 }
 
-const QuantitySelector = ({ quantity, onDecrease, onIncrease }: { quantity: number; onDecrease: () => void; onIncrease: () => void }) => (
-  <div className="flex items-center justify-center gap-3">
-    <button onClick={onDecrease} className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full hover:bg-gray-300 text-black">
-      -
-    </button>
-    <span className="min-w-[2rem] text-center font-medium">{quantity}</span>
-    <button onClick={onIncrease} className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full hover:bg-gray-300 text-black">
-      +
-    </button>
+const AvailableStock = ({ availableStock }: { availableStock: number }) => (
+  <div className="stock-info">
+    <span className="available-stock">Disponible: {availableStock}</span>
   </div>
-);
-
-const StockInfo = ({ stock, quantity }: { stock: number; quantity: number }) => (
-  <p className="text-sm text-gray-600 text-center">
-    Stock disponible: <span className="font-semibold">{stock - quantity}</span>
-  </p>
 );
 
 const ProductActions = ({ product, onAdd }: Props) => {
   const [quantity, setQuantity] = useState(0);
   const { id: productId, stock } = product;
+  const availableStock = product.stock - quantity;
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem(`quantity-${productId}`);
-      if (saved) {
-        setQuantity(parseInt(saved, 10));
+      const carrito = JSON.parse(localStorage.getItem("carrito") || "[]");
+      const existingItem = carrito.find((item: any) => item.id === productId);
+      if (existingItem) {
+        setQuantity(existingItem.quantity);
       }
     }
   }, [productId]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      localStorage.setItem(`quantity-${productId}`, quantity.toString());
+      const carrito = JSON.parse(localStorage.getItem("carrito") || "[]");
+      const existingItemIndex = carrito.findIndex((item: any) => item.id === productId);
+
+      if (quantity > 0) {
+        const cartItem = {
+          id: product.id,
+          name: product.name,
+          quantity: quantity,
+        };
+
+        if (existingItemIndex >= 0) {
+          carrito[existingItemIndex] = cartItem;
+        } else {
+          carrito.push(cartItem);
+        }
+      } else {
+        if (existingItemIndex >= 0) {
+          carrito.splice(existingItemIndex, 1);
+        }
+      }
+
+      localStorage.setItem("carrito", JSON.stringify(carrito));
     }
 
-    // Avisar al carrito
     onAdd(productId, quantity);
-  }, [quantity, productId, onAdd]);
+  }, [quantity, productId, product.name, product.id, onAdd]);
 
   const decrease = () => {
     if (quantity > 0) setQuantity((q) => q - 1);
@@ -56,10 +67,14 @@ const ProductActions = ({ product, onAdd }: Props) => {
     if (quantity < stock) setQuantity((q) => q + 1);
   };
 
+  if (!product) {
+    return <div className="product-card-skeleton">Cargando...</div>;
+  }
+
   return (
-    <div className="flex flex-col gap-3 items-center">
-      <QuantitySelector quantity={quantity} onDecrease={decrease} onIncrease={increase} />
-      <StockInfo stock={stock} quantity={quantity} />
+    <div className="flex flex-col gap-3 items-center ">
+      <QuantitySelectorUI quantity={quantity} onDecrease={decrease} onIncrease={increase} maxQuantity={stock} />
+      <AvailableStock availableStock={availableStock} />
     </div>
   );
 };

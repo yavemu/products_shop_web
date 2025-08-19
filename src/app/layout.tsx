@@ -1,19 +1,37 @@
+import type { Metadata } from "next";
 import "./globals.css";
-import { Providers } from "./providers";
+import { ShoppingBag } from "lucide-react";
 import CartSummary from "./components/cart/CartSummary";
+import { StoreProvider } from "@/lib/store/providers";
+
+export const metadata: Metadata = {
+  title: "My Product Store",
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#6366f1" />
+      </head>
       <body>
-        <Providers>
-          <div className="flex min-h-screen">
-            <main className="flex-1 p-4">{children}</main>
-            <section className="w-72 mt-25 p-5 flex flex-col justify-between sticky top-6 h-fit self-start border-l border-gray-300">
-              <CartSummary />
-            </section>
+        <StoreProvider>
+          <CartSummary />
+
+          <div className="main-layout">
+            <header className="app-header">
+              <h1 className="app-title">
+                <ShoppingBag size={24} style={{ display: "inline", marginRight: "0.5rem" }} />
+                My Product Store
+              </h1>
+            </header>
+
+            <div className="app-content">
+              <main>{children}</main>
+            </div>
           </div>
-        </Providers>
+        </StoreProvider>
       </body>
     </html>
   );

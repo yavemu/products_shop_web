@@ -1,4 +1,4 @@
-import { Product } from "@/types/products/product";
+import { Product } from "@/lib/types/product";
 import ProductCard from "../components/products/ProductCard";
 
 export const dynamic = "force-dynamic";
@@ -15,18 +15,20 @@ export default async function ProductsPage() {
   const products: Product[] = await res.json();
 
   return (
-    <main className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Productos</h1>
+    <section className="products-section">
+      <h3 className="section-title">Productos Destacados</h3>
 
       {products.length === 0 ? (
-        <p>No hay productos.</p>
+        <div className="no-products">
+          <p>No hay productos disponibles</p>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="products-grid">
           {products.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
         </div>
       )}
-    </main>
+    </section>
   );
 }

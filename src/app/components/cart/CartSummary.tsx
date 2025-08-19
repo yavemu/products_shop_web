@@ -13,8 +13,6 @@ interface CartItem {
   quantity: number;
 }
 
-const LOCALE = "es-ES";
-
 const CartSummary = () => {
   const dispatch = useAppDispatch();
   const cartItems = useAppSelector((state) => state.cart.items);

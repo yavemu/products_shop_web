@@ -18,6 +18,7 @@ export function useApi<T>(endpoint: string, options?: ApiOptions) {
       try {
         const result = await apiClient<T>(endpoint, options);
         if (isMounted) setData(result);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         if (isMounted) setError(err.message || "Error desconocido");
       } finally {

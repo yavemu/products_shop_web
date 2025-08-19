@@ -4,6 +4,13 @@ import { Product } from "@/lib/types/product";
 import { useState, useEffect } from "react";
 import QuantitySelectorUI from "../ui/quantity-selector";
 
+export interface productItem {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
 interface Props {
   product: Product;
   onAdd: ({ id, quantity, name, price }: { id: string | number; quantity: number; name: string; price: number }) => void;
@@ -23,7 +30,7 @@ const ProductActions = ({ product, onAdd }: Props) => {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const carrito = JSON.parse(localStorage.getItem("carrito") || "[]");
-      const existingItem = carrito.find((item: any) => item.id === productId);
+      const existingItem = carrito.find((item: productItem) => item.id === productId);
       if (existingItem) {
         setQuantityToAdd(existingItem.quantity);
       }
@@ -33,7 +40,7 @@ const ProductActions = ({ product, onAdd }: Props) => {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const carrito = JSON.parse(localStorage.getItem("carrito") || "[]");
-      const existingItemIndex = carrito.findIndex((item: any) => item.id === product.id);
+      const existingItemIndex = carrito.findIndex((item: productItem) => item.id === product.id);
       console.log("existingItemIndex", existingItemIndex);
       if (quantityToAdd > 0) {
         const cartItem = {

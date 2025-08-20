@@ -1,10 +1,11 @@
 "use client";
 
 import { formatCurrency } from "@/lib/currency-utils";
-import { clearCart, loadCart, removeFromCart } from "@/lib/store/cartSlice";
+import { clearCart, loadCart, removeFromCart, updateItemQuantity } from "@/lib/store/cartSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/store/store";
-import { CreditCard, ShoppingCart, Trash2 } from "lucide-react";
+import { CreditCard, ShoppingCart, Trash2, Plus, Minus } from "lucide-react";
 import { useCallback, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 
 interface CartItem {
   id: number;
@@ -16,6 +17,7 @@ interface CartItem {
 const CartSummary = () => {
   const dispatch = useAppDispatch();
   const cartItems = useAppSelector((state) => state.cart.items);
+  const router = useRouter();
 
   useEffect(() => {
     dispatch(loadCart());
@@ -57,11 +59,9 @@ const CartSummary = () => {
 
   const handleCheckout = useCallback(() => {
     if (cartStats.totalItems > 0) {
-      alert(`Procesando compra por ${cartStats.formattedTotal}. ¡Gracias por su compra!`);
-      dispatch(clearCart());
-      clearLocalStorage();
+      router.push("/order");
     }
-  }, [cartStats.totalItems, cartStats.formattedTotal, dispatch, clearLocalStorage]);
+  }, [cartStats.totalItems, router]);
 
   const handleClearCart = useCallback(() => {
     if (confirm("¿Estás seguro de que quieres vaciar el carrito?")) {
@@ -73,6 +73,17 @@ const CartSummary = () => {
   const handleRemoveItem = useCallback(
     (productId: number) => {
       dispatch(removeFromCart(productId));
+    },
+    [dispatch],
+  );
+
+  const handleQuantityChange = useCallback(
+    (productId: number, newQuantity: number) => {
+      if (newQuantity <= 0) {
+        dispatch(removeFromCart(productId));
+      } else {
+        dispatch(updateItemQuantity({ id: productId, quantity: newQuantity }));
+      }
     },
     [dispatch],
   );
@@ -98,20 +109,34 @@ const CartSummary = () => {
     const itemTotal = formatPrice(item.price * item.quantity);
 
     return (
-      <div key={item.id} className="cart-item">
-        <div className="item-info">
+      <div key={item.id} className="cart-item-expanded">
+        <div className="item-info-expanded">
           <span className="item-name">{item.name}</span>
-          <span className="item-quantity">x{item.quantity}</span>
+          <span className="item-unit-price">{formatPrice(item.price)} c/u</span>
         </div>
-        <div className="item-actions">
-          <span className="item-price">{itemTotal}</span>
+        <div className="item-controls">
+          <div className="quantity-controls-cart">
+            <button
+              onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+              className="quantity-btn-cart"
+              disabled={item.quantity <= 1}
+              title="Disminuir cantidad"
+            >
+              <Minus size={16} />
+            </button>
+            <span className="quantity-display-cart">{item.quantity}</span>
+            <button onClick={() => handleQuantityChange(item.id, item.quantity + 1)} className="quantity-btn-cart" title="Aumentar cantidad">
+              <Plus size={16} />
+            </button>
+          </div>
+          <span className="item-total-price">{itemTotal}</span>
           <button
             onClick={() => handleRemoveItem(item.id)}
             className="remove-item-btn"
             title="Eliminar del carrito"
             aria-label={`Eliminar ${item.name} del carrito`}
           >
-            <Trash2 size={14} />
+            <Trash2 size={16} />
           </button>
         </div>
       </div>
@@ -151,7 +176,7 @@ const CartSummary = () => {
   );
 
   return (
-    <aside className="cart-summary" role="complementary" aria-label="Resumen del carrito">
+    <section className="cart-summary-full-width" aria-label="Resumen del carrito">
       <div className="cart-header">
         <h2 className="cart-title">
           <ShoppingCart size={20} aria-hidden="true" />
@@ -159,10 +184,20 @@ const CartSummary = () => {
         </h2>
       </div>
 
-      <CartStats />
-      <CartItemsList />
-      <CartActions />
-    </aside>
+      <div className="cart-content-grid">
+        <div className="cart-stats-section">
+          <CartStats />
+        </div>
+
+        <div className="cart-items-section">
+          <CartItemsList />
+        </div>
+
+        <div className="cart-actions-section">
+          <CartActions />
+        </div>
+      </div>
+    </section>
   );
 };
 

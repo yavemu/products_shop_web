@@ -2,7 +2,7 @@
 
 import { Product } from "@/lib/types/product";
 import { useState, useEffect } from "react";
-import QuantitySelectorUI from "../ui/quantity-selector";
+import QuantitySelectorUI from "../ui/QuantitySelector";
 
 export interface productItem {
   id: number;

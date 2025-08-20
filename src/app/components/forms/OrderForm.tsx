@@ -64,7 +64,7 @@ function OrderForm({ onBack, onSubmit }: OrderFormProps) {
     message: "",
   });
 
-  const orderProcessHelper = useRef<OrderProcessHelper>();
+  const orderProcessHelper = useRef<OrderProcessHelper | null>(null);
 
   if (!orderProcessHelper.current) {
     orderProcessHelper.current = new OrderProcessHelper(setProcessState);
@@ -120,7 +120,7 @@ function OrderForm({ onBack, onSubmit }: OrderFormProps) {
 
     const customerValidation = CreateOrderFormSchema.safeParse(updatedCustomerData);
     if (!customerValidation.success) {
-      customerValidation.error.errors.forEach((error) => {
+      customerValidation.error.issues.forEach((error) => {
         if (error.path.length > 0) {
           newErrors[error.path.join(".")] = error.message;
         }
@@ -129,7 +129,7 @@ function OrderForm({ onBack, onSubmit }: OrderFormProps) {
 
     const paymentValidation = PayOrderSchema.safeParse(paymentData);
     if (!paymentValidation.success) {
-      paymentValidation.error.errors.forEach((error) => {
+      paymentValidation.error.issues.forEach((error) => {
         if (error.path.length > 0) {
           newErrors[error.path.join(".")] = error.message;
         }

@@ -7,7 +7,7 @@ export interface ErrorMessageProps {
   className?: string;
 }
 
-function ErrorMessage({ error, onRetry, className = "" }) {
+function ErrorMessage({ error, onRetry, className = "" }: ErrorMessageProps) {
   const getErrorInfo = () => {
     if (error.includes("conexión") || error.includes("red")) {
       return {

@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/lib/store/store";
 import { clearCart } from "@/lib/store/cartSlice";
-import OrderForm, { CreateOrderDto, PayOrderDto } from "../components/forms/OrderForm";
+import OrderForm from "../components/forms/OrderForm";
+import type { CreateOrderDto, PayOrderDto } from "@/lib/validation/order";
 
 export default function OrderPage() {
   const router = useRouter();

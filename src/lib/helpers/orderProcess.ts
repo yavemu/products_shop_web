@@ -1,4 +1,5 @@
 import { CreateOrderDto, PayOrderDto } from "@/lib/validation/order";
+import { apiClient } from "@/lib/api/apiClient";
 
 export type OrderProcessStep = "creating-customer" | "creating-delivery" | "creating-order" | "processing-payment" | "completed" | "error";
 
@@ -16,6 +17,26 @@ export interface OrderProcessResult {
   orderId?: number;
   paymentId?: string;
   error?: string;
+}
+
+interface CustomerResponse {
+  id: number;
+  [key: string]: unknown;
+}
+
+interface DeliveryResponse {
+  id: number;
+  [key: string]: unknown;
+}
+
+interface OrderResponse {
+  id: number;
+  [key: string]: unknown;
+}
+
+interface PaymentResponse {
+  id: string;
+  [key: string]: unknown;
 }
 
 const stepMessages: Record<OrderProcessStep, string> = {
@@ -45,16 +66,51 @@ export class OrderProcessHelper {
     this.updateCallback(this.state);
   }
 
-  private async simulateEndpointCall(step: OrderProcessStep, duration: number = 2000): Promise<any> {
+  private async crearCliente(customerData: unknown): Promise<CustomerResponse> {
     this.updateState({
-      currentStep: step,
-      message: stepMessages[step],
+      currentStep: "creating-customer",
+      message: stepMessages["creating-customer"],
     });
 
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ success: true, id: Math.floor(Math.random() * 1000) + 1 });
-      }, duration);
+    return await apiClient<CustomerResponse>("/customers", {
+      method: "POST",
+      body: JSON.stringify(customerData),
+    });
+  }
+
+  private async registrarDatosDeEntrega(deliveryData: unknown): Promise<DeliveryResponse> {
+    this.updateState({
+      currentStep: "creating-delivery",
+      message: stepMessages["creating-delivery"],
+    });
+
+    return await apiClient<DeliveryResponse>("/deliveries", {
+      method: "POST",
+      body: JSON.stringify(deliveryData),
+    });
+  }
+
+  private async crearOrden(orderData: unknown): Promise<OrderResponse> {
+    this.updateState({
+      currentStep: "creating-order",
+      message: stepMessages["creating-order"],
+    });
+
+    return await apiClient<OrderResponse>("/orders", {
+      method: "POST",
+      body: JSON.stringify(orderData),
+    });
+  }
+
+  private async realizarPagoTC(orderId: number, paymentData: PayOrderDto): Promise<PaymentResponse> {
+    this.updateState({
+      currentStep: "processing-payment",
+      message: stepMessages["processing-payment"],
+    });
+
+    return await apiClient<PaymentResponse>(`/payments/${orderId}`, {
+      method: "POST",
+      body: JSON.stringify(paymentData),
     });
   }
 
@@ -67,22 +123,34 @@ export class OrderProcessHelper {
         error: undefined,
       });
 
-      const customerResult = await this.simulateEndpointCall("creating-customer", 1500);
+      // Step 1: Crear Cliente
+      const customerResult = await this.crearCliente({
+        // Extract customer data from orderData
+        name: orderData.customerName,
+        email: orderData.customerEmail,
+        phone: orderData.customerPhone,
+      });
       const customerId = customerResult.id;
 
-      const deliveryResult = await this.simulateEndpointCall("creating-delivery", 1200);
+      // Step 2: Registrar Datos de Entrega
+      const deliveryResult = await this.registrarDatosDeEntrega({
+        customerId,
+        address: orderData.deliveryAddress,
+        // Add other delivery data as needed
+      });
       const deliveryId = deliveryResult.id;
 
+      // Step 3: Crear Orden
       const finalOrderData = {
         ...orderData,
         customerId,
         deliveryId,
       };
-
-      const orderResult = await this.simulateEndpointCall("creating-order", 1800);
+      const orderResult = await this.crearOrden(finalOrderData);
       const orderId = orderResult.id;
 
-      const paymentResult = await this.simulateEndpointCall("processing-payment", 2200);
+      // Step 4: Realizar Pago con Tarjeta de Crédito
+      const paymentResult = await this.realizarPagoTC(orderId, paymentData);
       const paymentId = paymentResult.id;
 
       this.updateState({

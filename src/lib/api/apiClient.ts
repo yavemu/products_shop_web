@@ -25,29 +25,32 @@ export async function apiClient<T>(endpoint: string, options: ApiOptions = {}): 
     }
 
     return (await res.json()) as T;
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorName = error instanceof Error ? error.name : '';
+    const errorCode = (error as Error & { code?: string })?.code;
     
-    if (error.name === 'TypeError' && error.message === 'fetch failed') {
+    if (errorName === 'TypeError' && errorMessage === 'fetch failed') {
       throw new Error("No se pudo conectar con el servidor. Verifica tu conexión a internet o que el servicio esté disponible.");
     }
     
-    if (error.code === 'ECONNREFUSED' || error.message.includes('ECONNREFUSED')) {
+    if (errorCode === 'ECONNREFUSED' || errorMessage.includes('ECONNREFUSED')) {
       throw new Error("El servidor no está disponible en este momento. Intenta nuevamente más tarde.");
     }
     
-    if (error.code === 'ENOTFOUND' || error.message.includes('ENOTFOUND')) {
+    if (errorCode === 'ENOTFOUND' || errorMessage.includes('ENOTFOUND')) {
       throw new Error("No se pudo encontrar el servidor. Verifica la configuración de la aplicación.");
     }
     
-    if (error.name === 'AbortError') {
+    if (errorName === 'AbortError') {
       throw new Error("La petición ha sido cancelada debido a timeout.");
     }
     
-    if (error.message.includes('Network request failed')) {
+    if (errorMessage.includes('Network request failed')) {
       throw new Error("Error de red. Verifica tu conexión a internet.");
     }
     
-    if (error.message && !error.message.includes("fetch failed")) {
+    if (error instanceof Error && !errorMessage.includes("fetch failed")) {
       throw error;
     }
 

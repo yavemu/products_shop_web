@@ -15,9 +15,10 @@ export function useApi<T>(endpoint: string, options?: ApiOptions) {
     try {
       const result = await apiClient<T>(endpoint, options);
       setData(result);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("useApi Error:", err);
-      setError(err.message || "Ocurrió un error inesperado");
+      const errorMessage = err instanceof Error ? err.message : "Ocurrió un error inesperado";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

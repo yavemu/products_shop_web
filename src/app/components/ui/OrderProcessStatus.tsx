@@ -17,7 +17,7 @@ const stepIcons: Record<OrderProcessStep, React.ReactNode> = {
 };
 
 function OrderProcessStatus({ state, className = "", onClose }: OrderProcessStatusProps) {
-  if (!state.isProcessing && state.currentStep !== "completed" && state.currentStep !== "error") {
+  if (!state.isProcessing && state.currentStep !== "completed" && state.currentStep !== "error" && !state.message) {
     return null;
   }
 

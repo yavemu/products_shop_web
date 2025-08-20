@@ -97,16 +97,25 @@ export function useOrderProcess(updateCallback: (state: OrderProcessState) => vo
         validateCustomerInput(customerInput);
 
         updateState({
+          isProcessing: true,
           currentStep: "creating-customer",
           message: stepMessages["creating-customer"],
         });
 
-        const customerResponse = await customerApi.execute("/customers", {
+        const customerApiPromise = customerApi.execute("/customers", {
           method: "POST",
           body: JSON.stringify(customerInput),
         });
 
+        while (customerApi.loading) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+
+        const customerResponse = await customerApiPromise;
+
         console.log("🚀 customerResponse:", customerResponse);
+
+        await new Promise((resolve) => setTimeout(resolve, 1000));
 
         // Step 2: Registrar Datos de Entrega
         const deliveryInput: CreateDeliveryInput = {
@@ -120,14 +129,23 @@ export function useOrderProcess(updateCallback: (state: OrderProcessState) => vo
         validateDeliveryInput(deliveryInput);
 
         updateState({
+          isProcessing: true,
           currentStep: "creating-delivery",
           message: stepMessages["creating-delivery"],
         });
 
-        const deliveryResponse = await deliveryApi.execute("/deliveries", {
+        const deliveryApiPromise = deliveryApi.execute("/deliveries", {
           method: "POST",
           body: JSON.stringify(deliveryInput),
         });
+
+        while (deliveryApi.loading) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+
+        const deliveryResponse = await deliveryApiPromise;
+
+        await new Promise((resolve) => setTimeout(resolve, 1000));
 
         // Step 3: Crear Orden
         const orderInput: CreateOrderInput = {
@@ -143,20 +161,28 @@ export function useOrderProcess(updateCallback: (state: OrderProcessState) => vo
         validateOrderInput(orderInput, customerResponse, deliveryResponse);
 
         updateState({
+          isProcessing: true,
           currentStep: "creating-order",
           message: stepMessages["creating-order"],
         });
-
-        const orderResponse = await orderApi.execute("/orders", {
+        const orderApiPromise = orderApi.execute("/orders", {
           method: "POST",
           body: JSON.stringify(orderInput),
         });
+
+        while (orderApi.loading) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+
+        const orderResponse = await orderApiPromise;
+
+        await new Promise((resolve) => setTimeout(resolve, 1000));
 
         // Step 4: Realizar Pago con Tarjeta de Crédito
         const paymentInput: ProcessPaymentInput = {
           deliveryAmount: paymentData.deliveryAmount,
           deliveryName: paymentData.deliveryName,
-          cardNumber: paymentData.cardNumber.replaceAll(" ", ""), // Remove spaces
+          cardNumber: paymentData.cardNumber.replaceAll(" ", ""),
           expMonth: paymentData.expMonth,
           expYear: paymentData.expYear,
           cvc: paymentData.cvc,
@@ -167,16 +193,24 @@ export function useOrderProcess(updateCallback: (state: OrderProcessState) => vo
         validatePaymentInput(paymentInput);
 
         updateState({
+          isProcessing: true,
           currentStep: "processing-payment",
           message: stepMessages["processing-payment"],
         });
 
-        const paymentResponse = await paymentApi.execute(`/payment/${orderResponse.id}/pay-with-credit-card`, {
+        const paymentApiPromise = paymentApi.execute(`/payments/${orderResponse.id}/pay-with-credit-card`, {
           method: "POST",
           body: JSON.stringify(paymentInput),
         });
 
-        // Consolidate all responses
+        while (paymentApi.loading) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+
+        const paymentResponse = await paymentApiPromise;
+
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
         const consolidatedResponse: OrderProcessConsolidatedResponse = {
           customerResponse,
           deliveryResponse,
@@ -185,6 +219,7 @@ export function useOrderProcess(updateCallback: (state: OrderProcessState) => vo
         };
 
         updateState({
+          isProcessing: true,
           currentStep: "completed",
           message: stepMessages["completed"],
         });
@@ -200,24 +235,15 @@ export function useOrderProcess(updateCallback: (state: OrderProcessState) => vo
           consolidatedResponse,
         };
       } catch (error) {
-        let errorMessage = "Error desconocido";
-
-        if (error instanceof ApiValidationError) {
-          errorMessage = `Validación fallida: ${error.message}`;
-        } else if (error instanceof Error) {
-          errorMessage = error.message;
-        }
-
         updateState({
           currentStep: "error",
-          message: stepMessages["error"],
-          error: errorMessage,
+          message: "Ocurrió un error durante el proceso de la orden",
           isProcessing: false,
         });
 
         return {
           success: false,
-          error: errorMessage,
+          error: "Ocurrió un error durante el proceso de la orden",
         };
       }
     },
@@ -241,7 +267,6 @@ export function useOrderProcess(updateCallback: (state: OrderProcessState) => vo
     processOrder,
     reset,
     state,
-    // Individual API states for debugging
     customerState: {
       loading: customerApi.loading,
       error: customerApi.error,

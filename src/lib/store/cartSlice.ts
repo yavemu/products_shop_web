@@ -19,10 +19,8 @@ const cartSlice = createSlice({
       const existingItemIndex = state.items.findIndex((item) => item.id === id);
 
       if (existingItemIndex >= 0) {
-        // Si ya existe, actualizar cantidad
         state.items[existingItemIndex].quantity = quantity;
       } else {
-        // Si no existe, agregar nuevo item
         state.items.push({ id, quantity, name, price });
       }
     },

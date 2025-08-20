@@ -7,6 +7,10 @@ export async function apiClient<T>(endpoint: string, options: ApiOptions = {}): 
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
   const url = `${baseUrl}${endpoint}`;
 
+  console.log("Fetching:", url);
+  console.log("Options:", options);
+
+
   const { revalidate, ...fetchOptions } = options;
 
   try {

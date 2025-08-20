@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/store/store";
 import { updateItemQuantity, removeFromCart } from "@/lib/store/cartSlice";
 import { formatCurrency } from "@/lib/currency-utils";
 import { ArrowLeft, CreditCard, Truck, Trash2 } from "lucide-react";
 import { CreateOrderFormSchema, PayOrderSchema, type CreateOrderFormDto, type PayOrderDto, type CreateOrderDto } from "@/lib/validation/order";
-import { OrderProcessHelper, type OrderProcessState } from "@/lib/helpers/orderProcess";
+import { useOrderProcess, type OrderProcessState } from "@/lib/hooks/useOrderProcess";
 import OrderProcessStatus from "../ui/OrderProcessStatus";
 
 import FormContainer from "./FormContainer";
@@ -64,11 +64,16 @@ function OrderForm({ onBack, onSubmit }: OrderFormProps) {
     message: "",
   });
 
-  const orderProcessHelper = useRef<OrderProcessHelper | null>(null);
+  const { processOrder, reset } = useOrderProcess(setProcessState);
 
-  if (!orderProcessHelper.current) {
-    orderProcessHelper.current = new OrderProcessHelper(setProcessState);
-  }
+  const handleCloseStatus = () => {
+    reset();
+    setProcessState({
+      isProcessing: false,
+      currentStep: "creating-customer",
+      message: "",
+    });
+  };
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const total = subtotal + paymentData.deliveryAmount;
@@ -151,7 +156,7 @@ function OrderForm({ onBack, onSubmit }: OrderFormProps) {
       };
 
       try {
-        const result = await orderProcessHelper.current!.processOrder(orderData, paymentData);
+        const result = await processOrder(orderData, paymentData);
 
         if (result.success) {
           setTimeout(() => {
@@ -410,7 +415,7 @@ function OrderForm({ onBack, onSubmit }: OrderFormProps) {
         </fieldset>
       </FormContainer>
 
-      <OrderProcessStatus state={processState} />
+      <OrderProcessStatus state={processState} onClose={handleCloseStatus} />
     </div>
   );
 }

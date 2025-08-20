@@ -1,9 +1,10 @@
-import { Loader2, CheckCircle, XCircle } from "lucide-react";
-import { OrderProcessState, OrderProcessStep } from "@/lib/helpers/orderProcess";
+import { Loader2, CheckCircle, XCircle, X } from "lucide-react";
+import { OrderProcessState, OrderProcessStep } from "@/lib/hooks/useOrderProcess";
 
 interface OrderProcessStatusProps {
   state: OrderProcessState;
   className?: string;
+  onClose?: () => void;
 }
 
 const stepIcons: Record<OrderProcessStep, React.ReactNode> = {
@@ -15,7 +16,7 @@ const stepIcons: Record<OrderProcessStep, React.ReactNode> = {
   "error": <XCircle size={32} className="text-red-600" />
 };
 
-function OrderProcessStatus({ state, className = "" }: OrderProcessStatusProps) {
+function OrderProcessStatus({ state, className = "", onClose }: OrderProcessStatusProps) {
   if (!state.isProcessing && state.currentStep !== "completed" && state.currentStep !== "error") {
     return null;
   }
@@ -23,6 +24,15 @@ function OrderProcessStatus({ state, className = "" }: OrderProcessStatusProps) 
   return (
     <div className={`order-process-status ${className}`}>
       <div className="process-content">
+        {(state.currentStep === "error" || state.currentStep === "completed") && onClose && (
+          <button 
+            onClick={onClose}
+            className="close-button"
+            aria-label="Cerrar"
+          >
+            <X size={20} />
+          </button>
+        )}
         <div className="process-icon">
           {stepIcons[state.currentStep]}
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { apiClient, ApiOptions } from "@/lib/api/apiClient";
 
 export function useApi<T>(endpoint: string, options?: ApiOptions) {
@@ -8,30 +8,28 @@ export function useApi<T>(endpoint: string, options?: ApiOptions) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let isMounted = true;
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
 
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
+    try {
+      const result = await apiClient<T>(endpoint, options);
+      setData(result);
+    } catch (err: any) {
+      console.error("useApi Error:", err);
+      setError(err.message || "Ocurrió un error inesperado");
+    } finally {
+      setLoading(false);
+    }
+  }, [endpoint, options]);
 
-      try {
-        const result = await apiClient<T>(endpoint, options);
-        if (isMounted) setData(result);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (err: any) {
-        if (isMounted) setError(err.message || "Error desconocido");
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
-
+  const retry = useCallback(() => {
     fetchData();
+  }, [fetchData]);
 
-    return () => {
-      isMounted = false;
-    };
-  }, [endpoint]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
-  return { data, loading, error };
+  return { data, loading, error, retry };
 }

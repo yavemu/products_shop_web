@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { ShoppingBag } from "lucide-react";
-import CartSummary from "./components/cart/CartSummary";
 import { StoreProvider } from "@/lib/store/providers";
+import Header from "./components/Header";
 
 export const metadata: Metadata = {
   title: "My Product Store",
@@ -17,15 +16,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <StoreProvider>
-          <CartSummary />
-
           <div className="main-layout">
-            <header className="app-header">
-              <h1 className="app-title">
-                <ShoppingBag size={24} style={{ display: "inline", marginRight: "0.5rem" }} />
-                My Product Store
-              </h1>
-            </header>
+            <Header />
 
             <div className="app-content">
               <main>{children}</main>

@@ -25,8 +25,32 @@ export async function apiClient<T>(endpoint: string, options: ApiOptions = {}): 
     }
 
     return (await res.json()) as T;
-  } catch (error) {
-    console.error("❌ API Error:", error);
-    throw error;
+  } catch (error: any) {
+    
+    if (error.name === 'TypeError' && error.message === 'fetch failed') {
+      throw new Error("No se pudo conectar con el servidor. Verifica tu conexión a internet o que el servicio esté disponible.");
+    }
+    
+    if (error.code === 'ECONNREFUSED' || error.message.includes('ECONNREFUSED')) {
+      throw new Error("El servidor no está disponible en este momento. Intenta nuevamente más tarde.");
+    }
+    
+    if (error.code === 'ENOTFOUND' || error.message.includes('ENOTFOUND')) {
+      throw new Error("No se pudo encontrar el servidor. Verifica la configuración de la aplicación.");
+    }
+    
+    if (error.name === 'AbortError') {
+      throw new Error("La petición ha sido cancelada debido a timeout.");
+    }
+    
+    if (error.message.includes('Network request failed')) {
+      throw new Error("Error de red. Verifica tu conexión a internet.");
+    }
+    
+    if (error.message && !error.message.includes("fetch failed")) {
+      throw error;
+    }
+
+    throw new Error("Ocurrió un error inesperado. Intenta nuevamente.");
   }
 }

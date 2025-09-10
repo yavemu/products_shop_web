@@ -15,14 +15,14 @@ interface Props {
 export default function ProductCard({ product }: Props) {
   const dispatch = useDispatch();
 
-  const handleAdd = ({ id, quantity, price, name }: { id: string | number; quantity: number; price: number; name: string }) => {
-    console.log("estoy en handleAdd", { id, quantity, price, name });
+  const handleAdd = ({ id, quantity, totalPrice, name }: { id: string | number; quantity: number; totalPrice: number; name: string }) => {
+    console.log("estoy en handleAdd", { id, quantity, totalPrice, name });
     dispatch(
       addToCart({
         id,
         quantity,
         name,
-        price,
+        totalPrice,
       }),
     );
   };
@@ -47,7 +47,13 @@ export default function ProductCard({ product }: Props) {
         <h3 className="product-title">{product.name}</h3>
       </div>
       <p className="product-description">{product.description}</p>
-      <div className="product-price">{formatCurrency(product.price)}</div>
+      <div className="product-price">
+        <small>Subtotal: {formatCurrency(product.price)}</small>
+        <br />
+        <b>
+          Total +({product.tax}%) {formatCurrency(product.totalPrice)}
+        </b>
+      </div>
       <ProductActions product={product} onAdd={handleAdd} />
     </article>
   );

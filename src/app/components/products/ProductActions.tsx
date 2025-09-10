@@ -7,13 +7,13 @@ import QuantitySelectorUI from "../ui/QuantitySelector";
 export interface productItem {
   id: number;
   name: string;
-  price: number;
+  totalPrice: number;
   quantity: number;
 }
 
 interface Props {
   product: Product;
-  onAdd: ({ id, quantity, name, price }: { id: string | number; quantity: number; name: string; price: number }) => void;
+  onAdd: ({ id, quantity, name, totalPrice }: { id: string | number; quantity: number; name: string; totalPrice: number }) => void;
 }
 
 const AvailableStock = ({ availableStock }: { availableStock: number }) => (
@@ -47,7 +47,7 @@ const ProductActions = ({ product, onAdd }: Props) => {
           id: product.id,
           name: product.name,
           quantity: quantityToAdd,
-          price: product.price,
+          totalPrice: product.totalPrice,
         };
 
         if (existingItemIndex >= 0) {
@@ -57,7 +57,7 @@ const ProductActions = ({ product, onAdd }: Props) => {
         }
 
         localStorage.setItem("carrito", JSON.stringify(carrito));
-        onAdd({ id: product.id, quantity: quantityToAdd, name: product.name, price: product.price });
+        onAdd({ id: product.id, quantity: quantityToAdd, name: product.name, totalPrice: product.totalPrice });
       }
     }
   }, [quantityToAdd, onAdd, product]);

@@ -5,6 +5,8 @@ export interface Product {
   description: string;
   stock: number;
   price: number;
+  tax: number;
+  totalPrice: number;
   mainImage: string;
   thumbnail: string;
 }

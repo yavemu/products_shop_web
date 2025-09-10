@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 interface CartItem {
   id: number;
   name: string;
-  price: number;
+  totalPrice: number;
   quantity: number;
 }
 
@@ -36,7 +36,7 @@ const CartSummary = () => {
     const totalItems = cartItems.reduce((sum, item) => sum + (item?.quantity || 0), 0);
     const totalProducts = cartItems.length;
     const totalAmount = cartItems.reduce((sum, item) => {
-      return sum + (item?.price ? item.price * item.quantity : 0);
+      return sum + (item?.totalPrice ? item.totalPrice * item.quantity : 0);
     }, 0);
 
     return {
@@ -106,13 +106,13 @@ const CartSummary = () => {
   );
 
   const CartItemComponent = ({ item }: { item: CartItem }) => {
-    const itemTotal = formatPrice(item.price * item.quantity);
+    const itemTotal = formatPrice(item.totalPrice * item.quantity);
 
     return (
       <div key={item.id} className="cart-item-expanded">
         <div className="item-info-expanded">
           <span className="item-name">{item.name}</span>
-          <span className="item-unit-price">{formatPrice(item.price)} c/u</span>
+          <span className="item-unit-price">{formatPrice(item.totalPrice)} c/u</span>
         </div>
         <div className="item-controls">
           <div className="quantity-controls-cart">
